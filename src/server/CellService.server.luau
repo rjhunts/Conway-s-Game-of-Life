@@ -1,9 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UpdateCellEvent = ReplicatedStorage:WaitForChild("UpdateCellEvent")
+local UpdateCellFunction = ReplicatedStorage:WaitForChild("UpdateCellFunction")
 
-UpdateCellEvent.OnServerEvent:Connect(function(player, cell)
+UpdateCellFunction.OnServerInvoke = function(player, cell)
     checkCell(cell)
-end)
+end
 
 function checkCell(cell)
 
@@ -14,5 +14,23 @@ function checkCell(cell)
 		cell.Color = black -- Change cell to black
 	else
 		cell.Color = white -- Change cell to white
+	end
+end
+
+local ToggleSimulationEvent = ReplicatedStorage:WaitForChild("ToggleSimulationEvent")
+ToggleSimulationEvent.OnServerEvent:Connect(function(player, state)
+	-- Handle the toggle simulation event here
+	print(player.Name .. " toggled simulation to: " .. tostring(state))
+	-- You can add logic to start or stop the simulation based on the state
+	STATE = state
+	runSimulation()
+end)
+
+STATE = false -- Initial state of the simulation
+
+function runSimulation()
+	while STATE do
+		print("Simulation running...")
+		task.wait(1)
 	end
 end
