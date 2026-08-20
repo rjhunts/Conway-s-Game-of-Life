@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UpdateCellFunction = ReplicatedStorage:WaitForChild("UpdateCellFunction")
+local Cells = workspace:WaitForChild("Cells"):GetChildren()
 
 UpdateCellFunction.OnServerInvoke = function(player, cell)
     checkCell(cell)
@@ -31,6 +32,69 @@ STATE = false -- Initial state of the simulation
 function runSimulation()
 	while STATE do
 		print("Simulation running...")
+		local changes = {}
+		for i, row in pairs(Cells) do
+			for j, cell in pairs(row:GetChildren()) do
+
+				local neighbors = getNeighbors(cell)
+				if not neighbors then
+					continue
+				end
+
+				local population = 0
+				for _, neighbor in pairs(neighbors) do
+					if getCellState(neighbor) then
+						population += 1
+					end
+				end
+
+				local cellState = getCellState(cell)
+				if cellState then
+					if population < 2 or population > 3 then
+						changes[cell] = Color3.fromRGB(255, 255, 255) -- Cell dies (white)
+					end
+				else
+					if population == 3 then
+						changes[cell] = Color3.fromRGB(0, 0, 0) -- Cell becomes alive (black)
+					end
+				end
+			end
+		end
 		task.wait(1)
+		for cell, newColor in pairs(changes) do
+			cell.Color = newColor
+		end
 	end
+end
+
+function getCellState(cell)
+	local cellState = false
+	if cell.Color == Color3.fromRGB(0, 0, 0) then
+		cellState = true
+	end
+	return cellState
+end
+
+function getNeighbors(cell)
+	local row = cell.Parent
+	local neighbors = {}
+
+	if row.Name == "1" or row.Name == "64" then
+		return -- Skip the first and last rows
+	elseif cell.Name == "1" or cell.Name == "64" then
+		return -- Skip the first and last columns
+	else
+		neighbors = {
+			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Right
+			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Top
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Bottom
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Top Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Bottom Left
+		}
+	end
+
+	return neighbors
 end
