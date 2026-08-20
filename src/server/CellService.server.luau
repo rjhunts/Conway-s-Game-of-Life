@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UpdateCellFunction = ReplicatedStorage:WaitForChild("UpdateCellFunction")
+local UpdateSpeedEvent = ReplicatedStorage:WaitForChild("UpdateSpeedEvent")
 local Cells = workspace:WaitForChild("Cells"):GetChildren()
 
 UpdateCellFunction.OnServerInvoke = function(player, cell)
@@ -28,6 +29,11 @@ ToggleSimulationEvent.OnServerEvent:Connect(function(player, state)
 end)
 
 STATE = false -- Initial state of the simulation
+SPEED = 1 -- Default speed of the simulation
+
+UpdateSpeedEvent.OnServerEvent:Connect(function(player, speedValue)
+	SPEED = speedValue
+end)
 
 function runSimulation()
 	while STATE do
@@ -60,7 +66,7 @@ function runSimulation()
 				end
 			end
 		end
-		task.wait(1)
+		task.wait(1/SPEED)
 		for cell, newColor in pairs(changes) do
 			cell.Color = newColor
 		end
@@ -79,9 +85,9 @@ function getNeighbors(cell)
 	local row = cell.Parent
 	local neighbors = {}
 
-	if row.Name == "1" or row.Name == "64" then
+	if cell.Name == "1" or cell.Name == "64" then
 		return -- Skip the first and last rows
-	elseif cell.Name == "1" or cell.Name == "64" then
+	elseif row.Name == "1" or row.Name == "64" then
 		return -- Skip the first and last columns
 	else
 		neighbors = {
