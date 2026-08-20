@@ -4,10 +4,13 @@ local Player = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UpdateCellFunction = ReplicatedStorage:WaitForChild("UpdateCellFunction")
 local ToggleSimulationEvent = ReplicatedStorage:WaitForChild("ToggleSimulationEvent")
+local ScreenGUI = Player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
+local Frame = ScreenGUI:WaitForChild("Frame")
+local ToggleButton = Frame:WaitForChild("TextButton")
+local Speed = Frame:WaitForChild("TextBox")
 local isToggled = false
 
-Player.CharacterAdded:Connect(function()
-
+function fixUI()
 	-- Connect to the InputBegan event to detect mouse clicks
 	UIS.InputBegan:Connect(function(input, gameProcessedEvent)
 		if gameProcessedEvent then return end
@@ -23,11 +26,6 @@ Player.CharacterAdded:Connect(function()
 		end
 	end)
 
-	local ScreenGUI = Player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
-	local Frame = ScreenGUI:WaitForChild("Frame")
-	local ToggleButton = Frame:WaitForChild("TextButton")
-	local Speed = Frame:WaitForChild("TextBox")
-
 	local function fixText()
 		ToggleButton.Text = isToggled and "On" or "Off"
 	end
@@ -39,4 +37,14 @@ Player.CharacterAdded:Connect(function()
 
 		ToggleSimulationEvent:FireServer(isToggled)
 	end)
+end
+
+if Player.Character then
+	fixUI()
+else
+	Player.CharacterAdded:Wait()
+	fixUI()
+end
+Player.CharacterAdded:Connect(function()
+	fixUI()
 end)
