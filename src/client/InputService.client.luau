@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UpdateCellFunction = ReplicatedStorage:WaitForChild("UpdateCellFunction")
+local UpdateSpeedEvent = ReplicatedStorage:WaitForChild("UpdateSpeedEvent")
 local ToggleSimulationEvent = ReplicatedStorage:WaitForChild("ToggleSimulationEvent")
 local ScreenGUI = Player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
 local Frame = ScreenGUI:WaitForChild("Frame")
@@ -37,14 +38,23 @@ function fixUI()
 
 		ToggleSimulationEvent:FireServer(isToggled)
 	end)
+
+	Speed.FocusLost:Connect(function(enterPressed)
+		if enterPressed then
+			local speedValue = tonumber(Speed.Text)
+			if speedValue <= 0 then return end
+
+			if speedValue then
+				UpdateSpeedEvent:FireServer(speedValue)
+			end
+		end
+	end)
 end
 
 if Player.Character then
 	fixUI()
-else
-	Player.CharacterAdded:Wait()
-	fixUI()
 end
+
 Player.CharacterAdded:Connect(function()
 	fixUI()
 end)
