@@ -21,9 +21,6 @@ end
 
 local ToggleSimulationEvent = ReplicatedStorage:WaitForChild("ToggleSimulationEvent")
 ToggleSimulationEvent.OnServerEvent:Connect(function(player, state)
-	-- Handle the toggle simulation event here
-	print(player.Name .. " toggled simulation to: " .. tostring(state))
-	-- You can add logic to start or stop the simulation based on the state
 	STATE = state
 	runSimulation()
 end)
@@ -85,20 +82,121 @@ function getNeighbors(cell)
 	local row = cell.Parent
 	local neighbors = {}
 
-	if cell.Name == "1" or cell.Name == "64" then
-		return -- Skip the first and last rows
-	elseif row.Name == "1" or row.Name == "64" then
-		return -- Skip the first and last columns
+	-- TOP LEFT CORNER
+	if row.Name == "1" and cell.Name == "1" then
+		 neighbors = {
+			row:FindFirstChild("2"), -- Bottom
+			row:FindFirstChild("64"), -- Top
+			row.Parent:FindFirstChild("2"):FindFirstChild("1"), -- Right
+			row.Parent:FindFirstChild("64"):FindFirstChild("1"), -- Left
+			row.Parent:FindFirstChild("2"):FindFirstChild("2"), -- Bottom Right
+			row.Parent:FindFirstChild("2"):FindFirstChild("64"), -- Top Right
+			row.Parent:FindFirstChild("64"):FindFirstChild("2"), -- Bottom Left
+			row.Parent:FindFirstChild("64"):FindFirstChild("64"), -- Top Left
+		}
+
+	-- BOTTOM LEFT CORNER
+	elseif row.Name == "1" and cell.Name == "64" then
+		neighbors = {
+			row:FindFirstChild("63"), -- Top
+			row:FindFirstChild("1"), -- Bottom
+			row.Parent:FindFirstChild("2"):FindFirstChild("64"), -- Right
+			row.Parent:FindFirstChild("64"):FindFirstChild("64"), -- Left
+			row.Parent:FindFirstChild("2"):FindFirstChild("63"), -- Top Right
+			row.Parent:FindFirstChild("2"):FindFirstChild("1"), -- Bottom Right
+			row.Parent:FindFirstChild("64"):FindFirstChild("63"), -- Top Left
+			row.Parent:FindFirstChild("64"):FindFirstChild("1"), -- Bottom Left
+		}
+
+	-- TOP RIGHT CORNER
+	elseif row.Name == "64" and cell.Name == "1" then
+		neighbors = {
+			row:FindFirstChild("2"), -- Bottom
+			row:FindFirstChild("64"), -- Top
+			row.Parent:FindFirstChild("63"):FindFirstChild("1"), -- Left
+			row.Parent:FindFirstChild("1"):FindFirstChild("1"), -- Right
+			row.Parent:FindFirstChild("63"):FindFirstChild("2"), -- Bottom Left
+			row.Parent:FindFirstChild("1"):FindFirstChild("2"), -- Bottom Right
+			row.Parent:FindFirstChild("63"):FindFirstChild("64"), -- Top Left
+			row.Parent:FindFirstChild("1"):FindFirstChild("64"), -- Top Right
+		}
+	
+	-- BOTTOM RIGHT CORNER
+	elseif row.Name == "64" and cell.Name == "64" then
+		neighbors = {
+			row:FindFirstChild("63"), -- Top
+			row:FindFirstChild("1"), -- Bottom
+			row.Parent:FindFirstChild("63"):FindFirstChild("64"), -- Left
+			row.Parent:FindFirstChild("1"):FindFirstChild("64"), -- Right
+			row.Parent:FindFirstChild("63"):FindFirstChild("1"), -- Bottom Left
+			row.Parent:FindFirstChild("1"):FindFirstChild("1"), -- Bottom Right
+			row.Parent:FindFirstChild("1"):FindFirstChild("63"), -- Top Right
+			row.Parent:FindFirstChild("63"):FindFirstChild("63"), -- Top Left
+		}
+
+	-- TOP SIDE
+	elseif cell.Name == "1" then
+		neighbors = {
+			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom
+			row:FindFirstChild("64"), -- Top
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild("64"), -- Top Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild("64"), -- Top Left
+		}
+
+	-- BOTTOM SIDE
+	elseif cell.Name == "64" then
+		neighbors = {
+			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top
+			row:FindFirstChild("1"), -- Bottom
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild("1"), -- Bottom Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild("1"), -- Bottom Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
+		}
+
+	-- LEFT SIDE
+	elseif row.Name == "1" then
+		neighbors = {
+			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom
+			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Right
+			row.Parent:FindFirstChild("64"):FindFirstChild(cell.Name), -- Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Right
+			row.Parent:FindFirstChild("64"):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Left
+			row.Parent:FindFirstChild("64"):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
+		}
+
+	-- RIGHT SIDE
+	elseif row.Name == "64" then
+		neighbors = {
+			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom
+			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top
+			row.Parent:FindFirstChild("1"):FindFirstChild(cell.Name), -- Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Left
+			row.Parent:FindFirstChild("1"):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
+			row.Parent:FindFirstChild("1"):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
+		}
+
+	-- EVERYTHING ELSE
 	else
 		neighbors = {
-			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Right
-			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Left
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Top
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Bottom
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Top Right
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
-			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Bottom Left
+			row:FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top
+			row:FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(cell.Name), -- Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(cell.Name), -- Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) + 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Right
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) + 1)), -- Bottom Left
+			row.Parent:FindFirstChild(tostring(tonumber(row.Name) - 1)):FindFirstChild(tostring(tonumber(cell.Name) - 1)), -- Top Left
 		}
 	end
 
